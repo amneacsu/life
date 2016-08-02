@@ -32,30 +32,28 @@ function togglePaint(e) {
   brushDown && paint(e) || tick();
 }
 
-function find(x, y) {
-  return cells.find(c => c.x === x && c.y === y);
+function find(cell) {
+  return cells.find(c => c.x === cell.x && c.y === cell.y);
 }
 
 function paint(e) {
   if (!brushDown) return;
   const x = ~~(e.offsetX / cellSize);
   const y = ~~(e.offsetY / cellSize);
-  spawn(x, y);
+  spawn({ x, y });
   drawScene();
 }
 
-function spawn(x, y) {
-  const cell = find(x, y);
-  !cell && cells.push({ x, y });
-}
+const spawn = cell => !find(cell) && cells.push(cell);
+const offset = (cell, offs) => ({ x: cell.x + offs.x, y: cell.y + offs.y });
 
-const isDead = cell => !find(cell.x, cell.y);
-const isComfy = cell => [2, 3].indexOf(liveNeighbours(cell.x, cell.y)) > -1;
-const isRipe = cell => liveNeighbours(cell.x, cell.y) === 3;
+const isDead = cell => !find(cell);
+const isComfy = cell => [2, 3].indexOf(liveNeighbours(cell)) > -1;
+const isRipe = cell => liveNeighbours(cell) === 3;
 
 const id = c => c;
-const liveNeighbours = (x, y) => neighbourhood.map(pos => find(x + pos.x, y + pos.y)).filter(id).length;
-const deadNeighbours = cell => neighbourhood.map(pos => ({ x: cell.x + pos.x, y: cell.y + pos.y })).filter(isDead);
+const liveNeighbours = cell => neighbourhood.map(pos => find(offset(cell, pos))).filter(id).length;
+const deadNeighbours = cell => neighbourhood.map(pos => offset(cell, pos)).filter(isDead);
 
 const getSpace = cells => {
   return cells.reduce((space, cell) => {
