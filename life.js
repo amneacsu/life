@@ -1,10 +1,22 @@
 const canvas = document.querySelector('#canvas');
 const drawContext = canvas.getContext('2d');
-const cells = [];
 const cellSize = 10;
+const interval = 200;
 
+let cells = [];
 let brushDown = false;
 let w, h;
+
+const neighbourhood = [
+  { x: -1, y: -1 },
+  { x: -1, y: 0 },
+  { x: -1, y: 1 },
+  { x: 0, y: -1 },
+  { x: 0, y: 1 },
+  { x: 1, y: -1 },
+  { x: 1, y: 0 },
+  { x: 1, y: 1 },
+];
 
 function resize() {
   setTimeout(function() {
@@ -15,27 +27,50 @@ function resize() {
   }, 10);
 };
 
-function togglePaint() {
+function togglePaint(e) {
   brushDown = !brushDown;
+  brushDown && paint(e) || tick();
+}
+
+function find(x, y) {
+  return cells.find(c => c.x === x && c.y === y);
 }
 
 function paint(e) {
   if (!brushDown) return;
   const x = ~~(e.offsetX / cellSize);
   const y = ~~(e.offsetY / cellSize);
-  const cell = cells.find(c => c.x === x && c.y === y);
+  spawn(x, y);
+  drawScene();
+}
+
+function spawn(x, y) {
+  const cell = find(x, y);
   !cell && cells.push({ x, y });
 }
 
+const isDead = cell => !find(cell.x, cell.y);
+const isComfy = cell => [2, 3].indexOf(liveNeighbours(cell.x, cell.y)) > -1;
+const isRipe = cell => liveNeighbours(cell.x, cell.y) === 3;
+
+const id = c => c;
+const liveNeighbours = (x, y) => neighbourhood.map(pos => find(x + pos.x, y + pos.y)).filter(id).length;
+const deadNeighbours = cell => neighbourhood.map(pos => ({ x: cell.x + pos.x, y: cell.y + pos.y })).filter(isDead);
+
+const getSpace = cells => {
+  return cells.reduce((space, cell) => {
+    const deads = deadNeighbours(cell);
+    const uniqDeads = deads.filter(cell => {
+      return !space.find(c => c.x === cell.x && c.y === cell.y);
+    });
+    return space.concat(uniqDeads);
+  }, []);
+}
+
 function update() {
-  // 1. Any live cell with fewer than two live neighbours dies, as if caused by under-population.
-
-  // 2. Any live cell with two or three live neighbours lives on to the next generation.
-
-  // 3. Any live cell with more than three live neighbours dies, as if by over-population.
-
-  // 4. Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
-
+  const survivors = cells.filter(isComfy);
+  const newCells = getSpace(cells).filter(isRipe);
+  return survivors.concat(newCells);
 }
 
 function clear() {
@@ -53,10 +88,10 @@ function drawCell(cell) {
 }
 
 function tick() {
-  update();
+  cells = update();
   clear();
   drawScene();
-  window.requestAnimationFrame(tick);
+  !brushDown && setTimeout(tick, interval);
 }
 
 window.onresize = resize;
