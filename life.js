@@ -7,6 +7,8 @@ let cells = [];
 let brushDown = false;
 let w, h;
 
+const rand = (min, max) => ~~(Math.random() * (max - min + 1)) + min;
+
 const neighbourhood = [
   { x: -1, y: -1 },
   { x: -1, y: 0 },
@@ -52,7 +54,7 @@ const isComfy = cell => [2, 3].indexOf(liveNeighbours(cell)) > -1;
 const isRipe = cell => liveNeighbours(cell) === 3;
 
 const id = c => c;
-const liveNeighbours = cell => neighbourhood.map(pos => find(offset(cell, pos))).filter(id).length;
+const liveNeighbours = cell => neighbourhood.map(n => offset(cell, n)).filter(n => find(n)).length;
 const deadNeighbours = cell => neighbourhood.map(pos => offset(cell, pos)).filter(isDead);
 
 const getSpace = cells => {
@@ -87,6 +89,7 @@ function drawCell(cell) {
 
 function tick() {
   cells = update();
+
   clear();
   drawScene();
   !brushDown && setTimeout(tick, interval);
@@ -99,5 +102,12 @@ canvas.onmousemove = paint;
 
 window.onload = function() {
   resize();
+
+  for (let i = cells.length; i < 500; i++) {
+    let x = rand(0, 100);
+    let y = rand(0, 100);
+    spawn({ x, y });
+  }
+
   tick();
 }
