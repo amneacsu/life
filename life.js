@@ -23,7 +23,7 @@ const neighbourhood = [
 function resize() {
   setTimeout(function() {
     w = window.innerWidth;
-    h = window.innerHeight
+    h = window.innerHeight;
     canvas.width = w;
     canvas.height = h;
   }, 10);
@@ -116,4 +116,4 @@ window.onload = function() {
   }
 
   tick();
-}
+};
