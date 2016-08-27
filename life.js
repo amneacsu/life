@@ -49,9 +49,6 @@ function paint(e) {
 const spawn = cell => !find(cell) && cells.push(cell);
 const offset = (cell, offs) => ({ x: cell.x + offs.x, y: cell.y + offs.y });
 
-const isComfy = cell => [2, 3].indexOf(liveNeighbours(cell)) > -1;
-const isRipe = cell => liveNeighbours(cell) === 3;
-
 const liveNeighbours = cell => neighbourhood.map(n => offset(cell, n)).filter(n => find(n)).length;
 
 function freeSpace(space, cell) {
@@ -73,7 +70,12 @@ function freeSpace(space, cell) {
   return space;
 }
 
+const countNeighbours = cell => cell.n = liveNeighbours(cell);
+const isComfy = cell => [2, 3].indexOf(cell.n) > -1;
+const isRipe = cell => cell.n === 3;
+
 function update() {
+  cells.forEach(countNeighbours);
   const survivors = cells.filter(isComfy);
   const newCells = cells.reduce(freeSpace, []).filter(isRipe);
   return survivors.concat(newCells);
