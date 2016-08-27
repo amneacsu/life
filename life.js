@@ -1,7 +1,7 @@
 const canvas = document.querySelector('#canvas');
 const drawContext = canvas.getContext('2d');
 const cellSize = 10;
-const interval = 200;
+const interval = 100;
 
 let cells = [];
 let brushDown = false;
@@ -108,7 +108,7 @@ canvas.onmousemove = paint;
 window.onload = function() {
   resize();
 
-  for (let i = cells.length; i < 500; i++) {
+  for (let i = cells.length; i < 1000; i++) {
     let x = rand(0, 100);
     let y = rand(0, 100);
     spawn({ x, y });
