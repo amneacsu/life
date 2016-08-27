@@ -50,7 +50,9 @@ function paint(e) {
 }
 
 function freeSpace(space, cell) {
-  area(cell).forEach(function(pos) {
+  const newSpace = [];
+
+  area(cell).forEach(function getSpace(pos) {
     let cell = find(pos);
 
     if (cell)
@@ -59,11 +61,11 @@ function freeSpace(space, cell) {
     if (!cell) {
       const d = space.find(ds => ds.x === pos.x && ds.y === pos.y);
       if (d) d.n += 1;
-      else space.push({ x: pos.x, y: pos.y, n: 1 });
+      else newSpace.push({ x: pos.x, y: pos.y, n: 1 });
     }
   });
 
-  return space;
+  return space.concat(newSpace);
 }
 
 const liveNeighbours = cell => area(cell).filter(n => find(n)).length;
@@ -85,7 +87,7 @@ function clear() {
 
 function drawScene() {
   drawContext.fillStyle = '#fff';
-  cells.map(drawCell);
+  cells.forEach(drawCell);
 }
 
 function drawCell(cell) {
