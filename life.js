@@ -8,6 +8,8 @@ let brushDown = false;
 let w, h;
 
 const rand = (min, max) => ~~(Math.random() * (max - min + 1)) + min;
+const spawn = cell => !find(cell) && cells.push(cell);
+const offset = (cell, offs) => ({ x: cell.x + offs.x, y: cell.y + offs.y });
 
 const neighbourhood = [
   { x: -1, y: -1 },
@@ -45,9 +47,6 @@ function paint(e) {
   spawn({ x, y });
   drawScene();
 }
-
-const spawn = cell => !find(cell) && cells.push(cell);
-const offset = (cell, offs) => ({ x: cell.x + offs.x, y: cell.y + offs.y });
 
 const liveNeighbours = cell => neighbourhood.map(n => offset(cell, n)).filter(n => find(n)).length;
 
