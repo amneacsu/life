@@ -10,6 +10,7 @@ let w, h;
 const rand = (min, max) => ~~(Math.random() * (max - min + 1)) + min;
 const spawn = cell => !find(cell) && cells.push(cell);
 const offset = (cell, offs) => ({ x: cell.x + offs.x, y: cell.y + offs.y });
+const area = cell => neighbourhood.map(offs => offset(cell, offs));
 
 const neighbourhood = [
   { x: -1, y: -1 },
@@ -48,12 +49,8 @@ function paint(e) {
   drawScene();
 }
 
-const liveNeighbours = cell => neighbourhood.map(n => offset(cell, n)).filter(n => find(n)).length;
-
 function freeSpace(space, cell) {
-  const area = neighbourhood.map(offs => offset(cell, offs));
-
-  area.forEach(function(pos) {
+  area(cell).forEach(function(pos) {
     let cell = find(pos);
 
     if (cell)
@@ -69,6 +66,7 @@ function freeSpace(space, cell) {
   return space;
 }
 
+const liveNeighbours = cell => area(cell).filter(n => find(n)).length;
 const countNeighbours = cell => cell.n = liveNeighbours(cell);
 const isComfy = cell => [2, 3].indexOf(cell.n) > -1;
 const isRipe = cell => cell.n === 3;
