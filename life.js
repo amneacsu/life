@@ -49,27 +49,33 @@ function paint(e) {
 const spawn = cell => !find(cell) && cells.push(cell);
 const offset = (cell, offs) => ({ x: cell.x + offs.x, y: cell.y + offs.y });
 
-const isDead = cell => !find(cell);
 const isComfy = cell => [2, 3].indexOf(liveNeighbours(cell)) > -1;
 const isRipe = cell => liveNeighbours(cell) === 3;
 
-const id = c => c;
 const liveNeighbours = cell => neighbourhood.map(n => offset(cell, n)).filter(n => find(n)).length;
-const deadNeighbours = cell => neighbourhood.map(pos => offset(cell, pos)).filter(isDead);
 
-const getSpace = cells => {
-  return cells.reduce((space, cell) => {
-    const deads = deadNeighbours(cell);
-    const uniqDeads = deads.filter(cell => {
-      return !space.find(c => c.x === cell.x && c.y === cell.y);
-    });
-    return space.concat(uniqDeads);
-  }, []);
+function freeSpace(space, cell) {
+  const area = neighbourhood.map(offs => offset(cell, offs));
+
+  area.forEach(function(pos) {
+    let cell = find(pos);
+
+    if (cell)
+      cell.n += 1;
+
+    if (!cell) {
+      const d = space.find(ds => ds.x === pos.x && ds.y === pos.y);
+      if (d) d.n += 1;
+      else space.push({ x: pos.x, y: pos.y, n: 1 });
+    }
+  });
+
+  return space;
 }
 
 function update() {
   const survivors = cells.filter(isComfy);
-  const newCells = getSpace(cells).filter(isRipe);
+  const newCells = cells.reduce(freeSpace, []).filter(isRipe);
   return survivors.concat(newCells);
 }
 
