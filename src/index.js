@@ -35,7 +35,7 @@ function resize() {
 
 function togglePaint(e) {
   brushDown = !brushDown;
-  brushDown && paint(e) || tick();
+  brushDown && paint(e);
 }
 
 function find(cell) {
@@ -47,7 +47,6 @@ function paint(e) {
   const x = ~~(e.offsetX / cellSize);
   const y = ~~(e.offsetY / cellSize);
   spawn({ x, y });
-  drawScene();
 }
 
 function freeSpace(space, cell) {
@@ -96,11 +95,9 @@ function drawCell(cell) {
 }
 
 function tick() {
-  cells = update();
-
   clear();
   drawScene();
-  !brushDown && setTimeout(tick, interval);
+  window.requestAnimationFrame(tick);
 }
 
 window.onresize = resize;
@@ -117,5 +114,6 @@ window.onload = function() {
     spawn({ x, y });
   }
 
+  setInterval(() => cells = update(), interval);
   tick();
 };
