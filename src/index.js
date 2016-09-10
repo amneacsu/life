@@ -1,7 +1,8 @@
 const canvas = document.querySelector('#canvas');
 const drawContext = canvas.getContext('2d');
-const cellSize = 10;
+const cellSize = 12;
 const interval = 100;
+const gap = 3;
 
 let cells = [];
 let brushDown = false;
@@ -86,12 +87,12 @@ function clear() {
 }
 
 function drawScene() {
-  drawContext.fillStyle = '#fff';
+  drawContext.fillStyle = '#f93';
   cells.forEach(drawCell);
 }
 
 function drawCell(cell) {
-  drawContext.fillRect(cell.x * cellSize, cell.y * cellSize, cellSize - 1, cellSize - 1);
+  drawContext.fillRect(cell.x * cellSize, cell.y * cellSize, cellSize - gap, cellSize - gap);
 }
 
 function tick() {
