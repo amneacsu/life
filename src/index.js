@@ -1,62 +1,58 @@
 const canvas = document.querySelector('#canvas');
 const drawContext = canvas.getContext('2d');
-
+const neighbourhood = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
 const cellSize = 12;
 const gap = 3;
+let grid = [];
 
-import createGame from './game.js';
-const game = createGame();
+const rand = (min, max) => ~~(Math.random() * (max - min + 1)) + min;
+const spawn = (list, cell) => !find(list, cell) && list.push(cell);
+const find = (list, cell) => list.find(c => c.x === cell.x && c.y === cell.y);
+const offset = (cell, offs) => ({ x: cell.x + offs[0], y: cell.y + offs[1] });
+const area = cell => neighbourhood.map(offs => offset(cell, offs));
+const liveNeighbours = (list, cell) => area(cell).filter(n => find(list, n)).length;
+const countNeighbours = (cell, i, list) => cell.n = liveNeighbours(list, cell);
+const uncrowded = cell => [2, 3].indexOf(cell.n) > -1;
+const fertile = cell => cell.n === 3;
 
-let brushDown = false;
-let w, h;
+function freeSpace(space, cell, index, list) {
+  const newSpace = [];
+
+  area(cell).forEach(function getSpace(pos) {
+    if (!find(list, pos)) {
+      const d = find(space, pos);
+      if (d) d.n += 1;
+      else newSpace.push({ x: pos.x, y: pos.y, n: 1 });
+    }
+  });
+
+  return space.concat(newSpace);
+}
+
+function tick(list) {
+  list.forEach(countNeighbours);
+  const survivors = list.filter(uncrowded);
+  const newCells = list.reduce(freeSpace, []).filter(fertile);
+  return survivors.concat(newCells);
+}
 
 function resize() {
-  setTimeout(function() {
-    w = window.innerWidth;
-    h = window.innerHeight;
-    canvas.width = w;
-    canvas.height = h;
-  }, 10);
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 };
 
-function togglePaint(e) {
-  brushDown = !brushDown;
-  brushDown && paint(e);
-}
-
-function paint(e) {
-  if (!brushDown) return;
-  const x = ~~(e.offsetX / cellSize);
-  const y = ~~(e.offsetY / cellSize);
-  game.spawn({ x, y });
-}
-
-function clear() {
-  drawContext.fillStyle = '#000';
-  drawContext.fillRect(0, 0, w, h);
-}
-
-function drawScene() {
+function render() {
   drawContext.fillStyle = '#f93';
-  game.cells.forEach(drawCell);
+  drawContext.clearRect(0, 0, canvas.width, canvas.height);
+  grid.forEach(cell => drawContext.fillRect(cell.x * cellSize, cell.y * cellSize, cellSize - gap, cellSize - gap));
+  window.requestAnimationFrame(render);
 }
 
-function drawCell(cell) {
-  drawContext.fillRect(cell.x * cellSize, cell.y * cellSize, cellSize - gap, cellSize - gap);
-}
-
-function tick() {
-  clear();
-  drawScene();
-  window.requestAnimationFrame(tick);
-}
-
+setInterval(() => grid = tick(grid), 100);
 window.onresize = resize;
-canvas.onmousedown = togglePaint;
-canvas.onmouseup = togglePaint;
-canvas.onmousemove = paint;
+resize();
+render();
 
-window.onload = function() {
-  resize();
-  tick();
-};
+for (let i = 0; i < 1000; i++) {
+  spawn(grid, { x: rand(0, ~~(canvas.width / cellSize)), y: rand(0, ~~(canvas.height / cellSize)) });
+}
